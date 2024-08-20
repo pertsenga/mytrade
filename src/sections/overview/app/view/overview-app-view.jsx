@@ -10,6 +10,9 @@ import { useMockedUser } from 'src/auth/hooks';
 
 import { AppWidgetSummary } from '../app-widget-summary';
 
+import useSWR from 'swr';
+import { fetcher } from 'src/utils/axios';
+
 // ----------------------------------------------------------------------
 
 export function OverviewAppView() {
@@ -17,12 +20,16 @@ export function OverviewAppView() {
 
   const theme = useTheme();
 
+  const { data, error, isLoading } = useSWR('/api/v5/account/bills?instType=MARGIN', fetcher);
+
+  console.log(data)
+
   return (
     <DashboardContent maxWidth="xl">
       <Grid container spacing={3}>
         <Grid xs={12} md={4}>
           <AppWidgetSummary
-            title="Total active users"
+            title="Total Weekly Trades"
             percent={2.6}
             total={18765}
             chart={{

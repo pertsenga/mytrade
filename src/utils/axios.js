@@ -4,7 +4,28 @@ import { CONFIG } from 'src/config-global';
 
 // ----------------------------------------------------------------------
 
-const axiosInstance = axios.create({ baseURL: CONFIG.site.serverUrl });
+const axiosInstance = axios.create({
+  baseURL: CONFIG.site.okxApiUrl,
+  headers: {
+    'OK-ACCESS-KEY': process.env.REACT_APP_OKX_API_KEY,
+    'OK-ACCESS-PASSPHRASE': process.env.REACT_APP_OKX_API_PASSPHRASE,
+  }
+});
+
+axiosInstance.interceptors.request.use(
+  (config) => {
+    const timestamp = new Date().toISOString()
+    const signature = CryptoJS.enc.Base64.stringify(
+      CryptoJS.HmacSHA256(`${timestamp}${config.method.toUpperCase()}${config.url}`, process.env.REACT_APP_OKX_API_SECRET)
+    );
+
+    config.headers['OK-ACCESS-SIGN'] = signature;
+    config.headers['OK-ACCESS-TIMESTAMP'] = timestamp;
+
+    return config
+  },
+  (error) => console.log('hello puta', error) && Promise.reject((error.response && error.response.data) || 'Something went wrong!')
+);
 
 axiosInstance.interceptors.response.use(
   (response) => response,
