@@ -77,6 +77,11 @@ export function DashboardLayout({ sx, children, data }) {
               signIn: false,
               purchase: false,
               helpLink: false,
+              workspaces: false,
+              localization: false,
+              notifications: false,
+              contacts: false,
+              searchbar: false,
             }}
             slots={{
               topArea: (
