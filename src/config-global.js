@@ -11,7 +11,6 @@ export const CONFIG = {
     assetURL: process.env.NEXT_PUBLIC_ASSET_URL ?? '',
     basePath: process.env.NEXT_PUBLIC_BASE_PATH ?? '',
     version: packageJson.version,
-    okxApiUrl: process.env.REACT_APP_OKX_HOST_API,
   },
   isStaticExport: JSON.parse(`${process.env.BUILD_STATIC_EXPORT}`),
   /**
@@ -64,4 +63,10 @@ export const CONFIG = {
     url: process.env.NEXT_PUBLIC_SUPABASE_URL ?? '',
     key: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? '',
   },
+  okx: {
+    url: process.env.NEXT_PUBLIC_OKX_HOST_API,
+    secretKey: process.env.NEXT_PUBLIC_OKX_API_SECRET_KEY,
+    passphrase: process.env.NEXT_PUBLIC_OKX_API_PASSPHRASE,
+    apiKey: process.env.NEXT_PUBLIC_OKX_API_KEY
+  }
 };

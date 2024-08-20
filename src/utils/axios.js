@@ -1,14 +1,15 @@
 import axios from 'axios';
+import CryptoJS from 'crypto-js';
 
 import { CONFIG } from 'src/config-global';
 
 // ----------------------------------------------------------------------
 
 const axiosInstance = axios.create({
-  baseURL: CONFIG.site.okxApiUrl,
+  baseURL: CONFIG.okx.url,
   headers: {
-    'OK-ACCESS-KEY': process.env.REACT_APP_OKX_API_KEY,
-    'OK-ACCESS-PASSPHRASE': process.env.REACT_APP_OKX_API_PASSPHRASE,
+    'OK-ACCESS-KEY': CONFIG.okx.apiKey,
+    'OK-ACCESS-PASSPHRASE': CONFIG.okx.passphrase,
   }
 });
 
@@ -16,7 +17,7 @@ axiosInstance.interceptors.request.use(
   (config) => {
     const timestamp = new Date().toISOString()
     const signature = CryptoJS.enc.Base64.stringify(
-      CryptoJS.HmacSHA256(`${timestamp}${config.method.toUpperCase()}${config.url}`, process.env.REACT_APP_OKX_API_SECRET)
+      CryptoJS.HmacSHA256(`${timestamp}${config.method.toUpperCase()}${config.url}`, CONFIG.okx.secretKey)
     );
 
     config.headers['OK-ACCESS-SIGN'] = signature;
@@ -24,7 +25,7 @@ axiosInstance.interceptors.request.use(
 
     return config
   },
-  (error) => console.log('hello puta', error) && Promise.reject((error.response && error.response.data) || 'Something went wrong!')
+  (error) => Promise.reject((error.response && error.response.data) || 'Something went wrong!')
 );
 
 axiosInstance.interceptors.response.use(

@@ -20,7 +20,7 @@ export function OverviewAppView() {
 
   const theme = useTheme();
 
-  const { data, error, isLoading } = useSWR('/api/v5/account/bills?instType=MARGIN', fetcher);
+  const { data, error, isLoading } = useSWR('/api/v5/account/bills?instType=SPOT', fetcher);
 
   console.log(data)
 
