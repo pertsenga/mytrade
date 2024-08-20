@@ -6,23 +6,24 @@ import Grid from '@mui/material/Unstable_Grid2';
 import { DashboardContent } from 'src/layouts/dashboard';
 import { _appAuthors, _appRelated, _appFeatured, _appInvoices, _appInstalled } from 'src/_mock';
 
-import { useMockedUser } from 'src/auth/hooks';
-
 import { AppWidgetSummary } from '../app-widget-summary';
 
 import useSWR from 'swr';
 import { fetcher } from 'src/utils/axios';
 
+import _ from 'lodash'
+import { transformBill } from 'src/utils/transformer';
+
 // ----------------------------------------------------------------------
 
 export function OverviewAppView() {
-  const { user } = useMockedUser();
-
   const theme = useTheme();
 
-  const { data, error, isLoading } = useSWR('/api/v5/account/bills?instType=SPOT', fetcher);
+  const { data: billsData, error, isLoading } = useSWR('/api/v5/account/bills?instType=SPOT&type=2', fetcher);
+  const bills = billsData?.data ? _.map(billsData.data, transformBill) : [];
 
-  console.log(data)
+  const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+  const billChartSeries = _.map(daysOfWeek, (day) => _.filter(bills, ['tsDayOfWeek', day]).length)
 
   return (
     <DashboardContent maxWidth="xl">
@@ -31,10 +32,10 @@ export function OverviewAppView() {
           <AppWidgetSummary
             title="Total Weekly Trades"
             percent={2.6}
-            total={18765}
+            total={bills.length}
             chart={{
-              categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'],
-              series: [15, 18, 12, 51, 68, 11, 39, 37],
+              categories: daysOfWeek,
+              series: billChartSeries,
             }}
           />
         </Grid>
