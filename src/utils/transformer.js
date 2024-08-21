@@ -1,6 +1,7 @@
 import {
   format,
-  fromUnixTime
+  fromUnixTime,
+  millisecondsToSeconds
 } from 'date-fns'
 
 const BILL_SUBTYPES = {
@@ -11,7 +12,7 @@ const BILL_SUBTYPES = {
 }
 
 export const transformBill = (bill) => {
-  const timestamp = fromUnixTime(bill.ts)
+  const timestamp = fromUnixTime(millisecondsToSeconds(bill.ts))
   const dayOfWeek = format(timestamp, 'EEEE')
 
   return {

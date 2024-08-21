@@ -8,33 +8,63 @@ import { _appAuthors, _appRelated, _appFeatured, _appInvoices, _appInstalled } f
 
 import { AppWidgetSummary } from '../app-widget-summary';
 
-import useSWR from 'swr';
+import useSWRInfinite from 'swr/infinite';
 import { fetcher } from 'src/utils/axios';
 
 import _ from 'lodash'
 import { transformBill } from 'src/utils/transformer';
+import { isToday, isYesterday } from 'date-fns';
 
 // ----------------------------------------------------------------------
 
 export function OverviewAppView() {
+  const DAYS_OF_WEEK = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
   const theme = useTheme();
 
-  const { data: billsData, error, isLoading } = useSWR('/api/v5/account/bills?instType=SPOT&type=2', fetcher);
-  const bills = billsData?.data ? _.map(billsData.data, transformBill) : [];
+  const getKey = (pageIndex, previousPageData) => {
+    const BASE_API = `/api/v5/account/bills?instType=SPOT&type=2`
+    const bills = previousPageData?.data || []
 
-  const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-  const billChartSeries = _.map(daysOfWeek, (day) => _.filter(bills, ['tsDayOfWeek', day]).length)
+    if (pageIndex === 0) return BASE_API
+    if (previousPageData && bills.length < 100) return null
+
+    const earliestBillId = _.chain(bills)
+                            .map('billId')
+                            .map(_.toNumber)
+                            .min()
+                            .value()
+
+    return `${BASE_API}&before=${earliestBillId}`
+  }
+
+  const { data: weeklyTradesData} = useSWRInfinite(getKey, fetcher, { initialSize: 10, persistSize: true });
+
+  const trades = _.chain(weeklyTradesData || [])
+                  .map('data')
+                  .uniq()
+                  .flatten()
+                  .map(transformBill)
+                  .value()
+  const billChartSeries = _.chain(trades)
+                            .countBy('tsDayOfWeek')
+                            .thru((result) => _.map(DAYS_OF_WEEK, (day) => result[day] || 0))
+                            .value()
+
+  const tradesToday = _.filter(trades, (trade) => isToday(trade.ts))
+  const tradesYesterday = _.filter(trades, (trade) => isYesterday(trade.ts))
+  const percentIncrease = ((tradesToday.length - tradesYesterday.length) / tradesYesterday.length) * 100
 
   return (
     <DashboardContent maxWidth="xl">
       <Grid container spacing={3}>
         <Grid xs={12} md={4}>
           <AppWidgetSummary
-            title="Total Weekly Trades"
-            percent={2.6}
-            total={bills.length}
+            title="Total Trades Today"
+            percent={percentIncrease}
+            percentLabel={"from yesterday"}
+            total={tradesToday.length}
             chart={{
-              categories: daysOfWeek,
+              categories: DAYS_OF_WEEK,
               series: billChartSeries,
             }}
           />

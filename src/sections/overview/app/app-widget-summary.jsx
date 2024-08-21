@@ -9,7 +9,7 @@ import { Chart, useChart } from 'src/components/chart';
 
 // ----------------------------------------------------------------------
 
-export function AppWidgetSummary({ title, percent, total, chart, sx, ...other }) {
+export function AppWidgetSummary({ title, percent, percentLabel, total, chart, sx, ...other }) {
   const theme = useTheme();
 
   const chartColors = chart.colors ?? [theme.palette.primary.main];
@@ -43,7 +43,7 @@ export function AppWidgetSummary({ title, percent, total, chart, sx, ...other })
         {fPercent(percent)}
       </Box>
       <Box component="span" sx={{ typography: 'body2', color: 'text.secondary' }}>
-        last 7 days
+        {percentLabel || "last 7 days"}
       </Box>
     </Box>
   );
